@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+    	http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+
+    <!-- SpringMVC注解的解析器 -->
+    <mvc:annotation-driven/>
+
+
+    <!-- 集成MVC时, 因为Spring MVC的前段控制器中, 在服务器启动的时候, 会去解析web.xml文件, 而mvc.xml文件正好配置在其中
+     因此: 在MVC中, 要将applicationContext.xml 引入进来,mvc.xml 是入口 -->
+    <import resource="classpath:applicationContext.xml"/>
+
+
+    <!--配置视图解析器(内部资源视图处理器)  前缀,后缀-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/views/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+
+
+
+
+    <!--配置MVC的拦截器  拦截的资源 + 排除哪些映射路径 + 以及该映射路径的对应的拦截器全限定名-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!--
+                 /**: 表示对所有的二级资源进行拦截
+                 /* 表示对所有的以及资源进行拦截
+                 不拦截登陆的时候跳转到登录验证的请求"/login.do" ,而不是"/login.jsp"
+            -->
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/login.do"/>
+            <bean class="com._520it.ssm.web.controller.CheckLoginInterceptor"/>
+
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+
+</beans>

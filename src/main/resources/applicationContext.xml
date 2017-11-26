@@ -1,0 +1,98 @@
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+    <!-- 扫描DI属性注解标签 -->
+    <context:annotation-config/>
+    <!--配置ICO扫描器-->
+    <context:component-scan base-package="com._520it.ssm"/>
+
+
+
+   <!-- 配置Mapper接口扫描器, 目的是来创建代理对象   作用和 applicationContext-mapper.xml 一样-->
+ <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+     <!--配置要扫描哪个包中的mapper接口-->
+     <property name="basePackage" value="com._520it.ssm.mapper"/>
+ </bean>
+
+
+
+
+    <!--数据库资源文件 引入占位符-->
+    <context:property-placeholder location="classpath:db.properties" system-properties-mode="NEVER"/>
+
+    <!-- 配置连接池DataSource-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="driverClassName" value="${db.driverClassName}"/>
+        <property name="url" value="${db.url}"/>
+        <property name="username" value="${db.username}"/>
+        <property name="password" value="${db.password}"/>
+    </bean>
+
+
+    <!--配置 sqlSessionFactory-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--连接池dataSource-->
+        <property name="dataSource" ref="dataSource"/>
+        <!--mybatis文件的个性化配置-->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+
+        <!--mapper文件  注意: 要将mapper.xml文件放到resource下面,
+           并且建立文件夹时,采用com/_520it/ssm/mapper形式, 不能用点建立-->
+
+        <property name="mapperLocations" value="classpath:com/_520it/ssm/mapper/*Mapper.xml"/>
+
+        <!--配置需要扫描的包, 给包内这些类自动器起别名-->
+        <property name="typeAliasesPackage" value="com._520it.ssm.domain"/>
+
+    </bean>
+
+
+
+    <!--what 配置 事务管理器DataSourceTransactionManager-->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--where 在哪里增强   切点pointcut 和 增强-->
+    <aop:config>
+        <aop:pointcut id="pc" expression="execution(* com._520it.ssm.service.*Service.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pc"/>
+    </aop:config>
+
+
+    <!--when 何时增强-->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="get" read-only="false"/>
+            <tx:method name="list" read-only="false"/>
+            <tx:method name="query" read-only="false"/>
+            <tx:method name="select" read-only="false"/>
+            <tx:method name="*"/>
+        </tx:attributes>
+    </tx:advice>
+
+
+    <!-- 进行mybatis和Spring 集成的时候: 在主配置文件中, 引入子配置文件-->
+  <!--  <import resource="classpath:WEB-INF/xml方式的配置文件/applicationContext-mapper.xml"/>
+    <import resource="classpath:WEB-INF/xml方式的配置文件/applicationContext-service.xml"/>
+-->
+
+
+
+
+
+</beans>
