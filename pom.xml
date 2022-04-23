@@ -49,7 +49,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>-->
 
         <!-- spring版本号 -->
-        <spring.version>4.2.4.RELEASE</spring.version>
+        <spring.version>5.3.19</spring.version>
     </properties>
 
 
